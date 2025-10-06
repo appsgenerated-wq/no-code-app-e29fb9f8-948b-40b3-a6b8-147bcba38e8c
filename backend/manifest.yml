@@ -1,0 +1,113 @@
+name: FlavorFleet
+
+entities:
+  User:
+    authenticable: true
+    properties:
+      - name
+      - name: email
+        type: email
+      - name: role
+        type: choice
+        options:
+          values: [customer, owner]
+        default: customer
+    policies:
+      create:
+        - access: admin
+      read:
+        - access: restricted
+          allow: User
+          condition: self
+        - access: admin
+      update:
+        - access: restricted
+          allow: User
+          condition: self
+        - access: admin
+      delete:
+        - access: admin
+      signup:
+        - access: public
+
+  Restaurant:
+    properties:
+      - name: name
+        type: string
+      - name: description
+        type: text
+      - name: address
+        type: string
+      - name: heroImage
+        type: image
+        options:
+          sizes:
+            thumbnail:
+              width: 400
+              height: 225
+            large:
+              width: 1280
+              height: 720
+    belongsTo:
+      - name: owner
+        entity: User
+    policies:
+      create:
+        - access: restricted
+          allow: User
+      read:
+        - access: public
+      update:
+        - access: restricted
+          allow: User
+          condition: self
+      delete:
+        - access: restricted
+          allow: User
+          condition: self
+
+  MenuItem:
+    properties:
+      - name: name
+        type: string
+      - name: description
+        type: text
+      - name: price
+        type: money
+        options:
+          currency: 'USD'
+      - name: photo
+        type: image
+        options:
+          sizes:
+            small:
+              width: 100
+              height: 100
+    belongsTo:
+      - name: restaurant
+        entity: Restaurant
+      - name: owner # Storing owner directly simplifies policy
+        entity: User
+    policies:
+      create:
+        - access: restricted
+          allow: User
+      read:
+        - access: public
+      update:
+        - access: restricted
+          allow: User
+          condition: self
+      delete:
+        - access: restricted
+          allow: User
+          condition: self
+
+
+# Health check endpoint for connection testing
+endpoints:
+  health:
+    path: /api/health
+    method: GET
+    policies: []
+    handler: healthCheck
